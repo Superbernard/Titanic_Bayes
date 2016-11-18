@@ -41,11 +41,11 @@ library(ggplot2)
 
 p1<-ggplot(data, aes(x = data$Pclass, fill = factor(data$Survived))) +
   geom_bar(stat='count', position='dodge') +
-  labs(x = 'PClass' ,y="Count", title="Pclass vs Survival",fill="Survived") 
+  labs(x = 'PClass' ,y="Count", title="Pclass vs Survival",fill="Survived")    #Survival vs Pclass
 
 plot(p1)
 
-gender_vs_survival = table(data$Sex,data$Survived)
+gender_vs_survival = table(data$Sex,data$Survived)       #Survival vs gender
 gender_vs_survival =as.data.frame.matrix(gender_vs_survival)
 gender_vs_survival$Survival_rate <- gender_vs_survival[,2] / (gender_vs_survival[,1]+gender_vs_survival[,2])
 gender_vs_survival
@@ -57,13 +57,13 @@ p2<-ggplot(data, aes(x = data$Survived, y = data$Age, col=data$Survived))+
 
 plot(p2)
 
-sibtab = table(data$SibSp, data$Survived)
+sibtab = table(data$SibSp, data$Survived)               #Survival vs # sibling and spouse
 sibtab <- as.data.frame.matrix(sibtab)
 sibtab$Survival_rate <- sibtab[,2] / (sibtab[,1]+sibtab[,2])
 Sibsp_vs_survival=sibtab
 Sibsp_vs_survival
 
-parchtab = table(data$Parch, data$Survived)
+parchtab = table(data$Parch, data$Survived)             #Survival vs # parents and children
 parchtab <- as.data.frame.matrix(parchtab)
 parchtab$Survival_rate <- parchtab[,2] / (parchtab[,1]+parchtab[,2])
 parchtab
