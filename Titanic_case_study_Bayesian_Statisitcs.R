@@ -1,3 +1,14 @@
+## A case study on survivial data of passengers on Titanic
+#
+# The aim of this piese of script is to analyze how each variable ( passenger class, gender etc. ) affects the survival rate of passengers.
+# Bayesian and classic logistic regression models as well as artifical neural network are established to fit the training set. The performance
+# of these models are then compared on a test set.
+#
+# In the  Bayesian model, Markov Chain Monte Carlo (MCMC) is used to approximate the posterior distribution as calculated by Bayes' Theorem.
+#
+
+
+
 data<-read.csv("Titanic.csv",header= T, sep = ",") #load dataset 
 data<-data[complete.cases(data),]  #get rid of the rows with missing values
 
@@ -259,7 +270,7 @@ print(paste('Accuracy',1-misClasificError2))
 
 
 
-##############Neural Network############################
+##############Artificial Neural Network############################
 library(neuralnet)
 train_net_data<-cbind(x,y)
 colnames(train_net_data)[3]<-"Sex.dummy"
