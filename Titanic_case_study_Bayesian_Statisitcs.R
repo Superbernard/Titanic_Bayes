@@ -1,50 +1,55 @@
 ## A case study on survivial data of passengers on Titanic
 #
-# The aim of this piese of script is to analyze how each variable ( passenger class, gender etc. ) affects the survival rate of passengers.
-# Bayesian and classic logistic regression models as well as artifical neural network are established to fit the training set. The performance
-# of these models are then compared on a test set.
+# The aim of this piese of script is to analyze how each variable ( passenger class, gender etc. ) affects the survival rate 
+# of passengers onboard in the case of Titanic. Bayesian and classic logistic regression models as well as artifical neural network
+# are established to fit the training set. The performance of these models are then compared on a test set.
 #
-# In the  Bayesian model, Markov Chain Monte Carlo (MCMC) is used to approximate the posterior distribution as calculated by Bayes' Theorem.
+# In the  Bayesian model, Markov Chain Monte Carlo (MCMC) is used to approximate the posterior distribution as calculated by 
+# Bayes' Theorem.
 #
 
 
 
-data<-read.csv("Titanic.csv",header= T, sep = ",") #load dataset 
-data<-data[complete.cases(data),]  #get rid of the rows with missing values
+data<-read.csv("Titanic.csv",header= T, sep = ",")   #load dataset 
+data<-data[complete.cases(data),]   #get rid of the rows with missing values
 
-Pclass.f = factor(data[,3])   #create dummy variable for Pclass          
-dummies_Pclass = model.matrix(~Pclass.f)  
-dummies_Pclass = dummies_Pclass[,-1]  #drop the first column (intercept)
+Pclass.f = factor(data[,3])    #define a factor variable to hold the dummy variable for Pclass        
+dummies_Pclass = model.matrix(~Pclass.f)   #create dummy variable for Pclass (passenger class) 
+dummies_Pclass = dummies_Pclass[,-1]   #drop the first column (intercept)
 
-Sex.f = factor(data[,5])   #create dummy variable for Sex, male 1; female 0          
-dummies_Sex = model.matrix(~Sex.f)  
-dummies_Sex = dummies_Sex[,-1]  #drop the first column (intercept)
+Sex.f = factor(data[,5])    #define a factor variable to hold the dummy variable for passenger gender             
+dummies_Sex = model.matrix(~Sex.f)    #create dummy variable for Sex, male 1; female 0
+dummies_Sex = dummies_Sex[,-1]   #drop the first column (intercept)
 
 
 
-##split the dataset into w subsets (training and testing)
-n_obser=dim(data)[1]
+##split the dataset into two subsets (training and testing)
+n_obser=dim(data)[1]   #number of observations 
 
-number_train<-round(n_obser*0.8)   # 80% of the data set to train 
-number_test<-n_obser - number_train
+number_train<-round(n_obser*0.8)    #80% of the data set to training set (an arbitrary split)
+number_test<-n_obser - number_train   #the rest 20% of the data set to test set
 
-index_train<-sample(number_train,number_train,replace = F)
-train<-data[index_train,]
+#since the observations in the data set are already in a random order, we can simply pick the first 80% 
+#as our training set and the last 20% as our test set. Otherwise, we need to randomly pick 80% and 20% 
+#observations from the whole set to form our training and test set.
+
+index_train<-sample(number_train,number_train,replace = F)    #shuffle observations in the training set again 
+train<-data[index_train,]    #training set
 
 x<-cbind(dummies_Pclass[index_train,], dummies_Sex[index_train] ,train[,c(6,7,8)])  #select appropriate variables as predictors
 y<-train[,2]  #Survival as the binary response
 
-test<-data[-index_train,]
+test<-data[-index_train,]    #test set
 
-x_test<-cbind(dummies_Pclass[-index_train,],dummies_Sex[-index_train] ,data[-index_train,c(6,7,8)])  #select appropriate variables as predictors
+x_test<-cbind(dummies_Pclass[-index_train,],dummies_Sex[-index_train] ,data[-index_train,c(6,7,8)])  
+#select appropriate variables as predictors
 y_test<-test[,2]  #Survival as the binary response
 
-
-data<-rbind(train,test)[,c(3,5,6,7,8,2)]  #Full data set used in the analysis
-data$Pclass<-as.factor(data$Pclass)
-data$Survived<-as.factor(data$Survived)
-head(data)
-summary(data)
+data<-rbind(train,test)[,c(3,5,6,7,8,2)]  #full data set used in the analysis
+data$Pclass<-as.factor(data$Pclass)    #convert Pclass to factor variable
+data$Survived<-as.factor(data$Survived)   #convert Survived to factor
+head(data)   #check the structure of data
+summary(data)   #summary of data
 
 
 ######Examine marginal effects##########
