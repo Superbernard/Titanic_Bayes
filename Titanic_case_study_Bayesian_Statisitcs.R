@@ -53,41 +53,39 @@ summary(data)   #summary of data
 
 
 ######Examine marginal effects##########
-library(ggplot2)
+library(ggplot2)    #load package ggplot2
 
 p1<-ggplot(data, aes(x = data$Pclass, fill = factor(data$Survived))) +
   geom_bar(stat='count', position='dodge') +
-  labs(x = 'PClass' ,y="Count", title="Pclass vs Survival",fill="Survived")    #Survival vs Pclass
-
+  labs(x = 'PClass' ,y="Count", title="Pclass vs Survival",fill="Survived")    #effect of Pclass on Survival
 plot(p1)
 
-gender_vs_survival = table(data$Sex,data$Survived)       #Survival vs gender
-gender_vs_survival =as.data.frame.matrix(gender_vs_survival)
-gender_vs_survival$Survival_rate <- gender_vs_survival[,2] / (gender_vs_survival[,1]+gender_vs_survival[,2])
+gender_vs_survival = table(data$Sex,data$Survived)       #count of survived individuals on gender
+gender_vs_survival =as.data.frame.matrix(gender_vs_survival)     #convert to data frame
+gender_vs_survival$Survival_rate <- gender_vs_survival[,2] / (gender_vs_survival[,1]+gender_vs_survival[,2])    #survival rate
 gender_vs_survival
 
 p2<-ggplot(data, aes(x = data$Survived, y = data$Age, col=data$Survived))+
   geom_point()+
   labs(title="Age vs Survival",x="Survived",y = "Age",colour = "Survivrd")+
-  geom_boxplot(fill=NA, outlier.colour=NA)
-
+  geom_boxplot(fill=NA, outlier.colour=NA)       #effect of gender on Survival
 plot(p2)
 
-sibtab = table(data$SibSp, data$Survived)               #Survival vs # sibling and spouse
-sibtab <- as.data.frame.matrix(sibtab)
-sibtab$Survival_rate <- sibtab[,2] / (sibtab[,1]+sibtab[,2])
+sibtab = table(data$SibSp, data$Survived)      #count of survived individuals on number of sibling and spouse
+sibtab <- as.data.frame.matrix(sibtab)     #convert to data frame
+sibtab$Survival_rate <- sibtab[,2] / (sibtab[,1]+sibtab[,2])     #survival rate
 Sibsp_vs_survival=sibtab
 Sibsp_vs_survival
 
-parchtab = table(data$Parch, data$Survived)             #Survival vs # parents and children
-parchtab <- as.data.frame.matrix(parchtab)
-parchtab$Survival_rate <- parchtab[,2] / (parchtab[,1]+parchtab[,2])
+parchtab = table(data$Parch, data$Survived)       #count of survived individuals on number of parents and children
+parchtab <- as.data.frame.matrix(parchtab)     #convert to data frame
+parchtab$Survival_rate <- parchtab[,2] / (parchtab[,1]+parchtab[,2])     #survival rate
 parchtab
 
 
 
 #################Bayesian logistc model#####################
-library(R2jags)
+library(R2jags)    #load package R2jags to interact with JAGS in R
 
 # Specify the data in a list, for later shipment to JAGS:
 n = length(y)
@@ -118,7 +116,7 @@ beta3 * Sex[i] + beta4 * Age[i] + beta5 * Sibsp[i] + beta6 * Parch[i]
 }
 
 # priors 
-beta0~dnorm( 0, 0.00001)   
+beta0~dnorm( 0, 0.00001)     
 beta1~dnorm( 0, 0.00001)
 beta2~dnorm( 0, 0.00001)
 beta3~dnorm( 0, 0.00001)
@@ -134,16 +132,16 @@ writeLines( modelString , con="titanic.txt" )
 
 
 initsList =list( beta0=0, beta1=0.01, beta2=0.01, beta3=0.01,
-                 beta4=0.01, beta5=0.01, beta6=0.01)
+                 beta4=0.01, beta5=0.01, beta6=0.01)    #initial values
 
 
 jagsModel = jags.model( file="titanic.txt" , data=dataList , inits=initsList , 
-                        n.chains=3 , n.adapt=1000 )
+                        n.chains=3 , n.adapt=1000 )   #create the jags model object
 
 update( jagsModel , n.iter=1000 )
 codaSamples = coda.samples( jagsModel , 
                             variable.names=c("beta0","beta1","beta2","beta3","beta4","beta5","beta6") ,
-                            n.iter=10000 )
+                            n.iter=10000 )   #generate posterior samples via MCMC
 
 save( codaSamples , file=paste0("titanic","Mcmc.Rdata") )    
 
@@ -177,7 +175,7 @@ beta=matrix(c(beta0,beta1,beta2,beta3,beta4,beta5,beta6),1,7) #put them into a c
 
 pctg_change_odds<-exp(beta[,-1])-1   #exclude the beta0 for intercept
 
-pctg_change_odds
+pctg_change_odds   #check result
 
 
 library(ggplot2)
@@ -188,16 +186,16 @@ vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
 
 denplot<-function(postsamples){  #function to make histogram and density plots for posterior 
   p<-list(7)
-  dat<-as.data.frame(as.matrix(postsamples,chains=TRUE))
-  dat<-dat[,-1]  #exclude the variable chain (first column)
-  title<-paste("beta",0:6, sep = " ")
+  dat<-as.data.frame(as.matrix(postsamples,chains=TRUE))   #convert to data frame
+  dat<-dat[,-1]   #exclude the variable chain (first column)
+  title<-paste("beta",0:6, sep = " ")    #set titles for plots
   xl<-paste("beta",0:6, sep = " ") 
   
   windows()
   grid.newpage()
   pushViewport(viewport(layout = grid.layout(3, 3)))
-  layout_r<-rep(1:3,each=3)  #row index for plots layout
-  layout_c<-rep(1:3,3)       #column index for plots layout
+  layout_r<-rep(1:3,each=3)   #row index for plots layout
+  layout_c<-rep(1:3,3)        #column index for plots layout
   
   for (i in 1:7){
     # Histogram overlaid with kernel density curve
@@ -214,7 +212,7 @@ denplot<-function(postsamples){  #function to make histogram and density plots f
   
 }
 
-denplot(codaSamples)
+denplot(codaSamples)   #call denplot function
 
 x_test_des<-cbind(rep(1,number_test),x_test)
 
@@ -228,12 +226,12 @@ p= function(x_design) exp(log_odds(x_design))/(1+exp(log_odds(x_design)))   #fun
 graphics.off()
 windows()
 layout(matrix(1:2,1,2))
-pred_bay= p(x_test_des)  #Predictions on testdata via the Bayesian model
+pred_bay= p(x_test_des)  #Predictions on test data via the Bayesian model
 plot(y_test,pch=16,col=rgb(1,0,0,0.75),xlab="Index",ylab = "Survived", ylim=c(-0.2,1.2),
      main="Bayesian model performance test\n before applying decision boundary")
 points(1:length(pred_bay),pred_bay,pch=16,col=rgb(0,0,1,0.75))
 legend("topright",col=c(rgb(1,0,0,0.75),rgb(0,0,1,0.75)),legend =c("Target","Output from Bayesian"),pch = c(16,16))
-pred_bay= ifelse(pred_bay > 0.5,1,0)   #Put a decision boundary 0.5
+pred_bay= ifelse(pred_bay > 0.5,1,0)   #Put a decision boundary at 0.5
 plot(y_test,pch=16,col=rgb(1,0,0,0.75),xlab="Index",ylab = "Survived", ylim=c(-0.2,1.2),
      main="Bayesian model performance test\n after applying decision boundary")
 points(1:length(pred_bay),pred_bay,pch=16,col=rgb(0,0,1,0.75))
@@ -242,7 +240,7 @@ legend("topright",col=c(rgb(1,0,0,0.75),rgb(0,0,1,0.75)),legend =c("Target","Out
 
 
 misClasificError1 <- mean(pred_bay != y_test)
-print(paste('Accuracy',1-misClasificError1))
+print(paste('Accuracy',1-misClasificError1))    #check accuracy 
 
 
 
@@ -257,12 +255,12 @@ summary(model)
 graphics.off()
 windows()
 layout(matrix(1:2,1,2))
-fitted.results <- predict(model,newdata=test,type='response') #Predictions on testdata via the classical model
+fitted.results <- predict(model,newdata=test,type='response') #Predictions on test data via the classical model
 plot(y_test,pch=16,col=rgb(1,0,0,0.75),xlab="Index",ylab = "Survived", ylim=c(-0.2,1.2),
      main="Classical model performance test\n before applying decision boundary")
 points(1:length(fitted.results),fitted.results,pch=16,col=rgb(0,0,1,0.75))
 legend("topright",col=c(rgb(1,0,0,0.75),rgb(0,0,1,0.75)),legend =c("Target","Output from Classical"),pch = c(16,16))
-fitted.results <- ifelse(fitted.results > 0.5,1,0) #Same decision boundary
+fitted.results <- ifelse(fitted.results > 0.5,1,0) #Same decision boundary at 0.5
 plot(y_test,pch=16,col=rgb(1,0,0,0.75),xlab="Index",ylab = "Survived", ylim=c(-0.2,1.2),
      main="Classical model performance test\n after applying decision boundary")
 points(1:length(fitted.results),fitted.results,pch=16,col=rgb(0,0,1,0.75))
@@ -270,25 +268,25 @@ legend("topright",col=c(rgb(1,0,0,0.75),rgb(0,0,1,0.75)),legend =c("Target","Out
 
 
 misClasificError2 <- mean(fitted.results != test$Survived)
-print(paste('Accuracy',1-misClasificError2))
+print(paste('Accuracy',1-misClasificError2))    #check accuracy 
 
 
 
 
 ##############Artificial Neural Network############################
 library(neuralnet)
-train_net_data<-cbind(x,y)
-colnames(train_net_data)[3]<-"Sex.dummy"
+train_net_data<-cbind(x,y)    #prepare training data
+colnames(train_net_data)[3]<-"Sex.dummy"     #specify column names
 colnames(train_net_data)[7]<-"Survived"
 net.titanic <- neuralnet(Survived~Pclass.f2+Pclass.f3+Sex.dummy+Age+SibSp+Parch, 
-                         data=train_net_data,hidden=10, threshold=0.01)
+                         data=train_net_data,hidden=10, threshold=0.01)    #build neural network
 print(net.titanic)
 
 plot(net.titanic,rep = "best") #Plot the neural network
 
-test_net_data<-cbind(x_test)
-colnames(test_net_data)[3]<-"Sex.dummy"
-net.results <- compute(net.titanic, test_net_data) #Run them through the neural network
+test_net_data<-cbind(x_test)   #prepare test data
+colnames(test_net_data)[3]<-"Sex.dummy"    #specify column names
+net.results <- compute(net.titanic, test_net_data)    #run test data on the trained net
 
 ls(net.results)
 
@@ -296,23 +294,23 @@ ls(net.results)
 graphics.off()
 windows()
 layout(matrix(1:2,1,2))
-net.fitted.results<-net.results$net.result #Predictions on testdata via trained net
+net.fitted.results<-net.results$net.result #predictions on test data via trained net
 plot(y_test,pch=16,col=rgb(1,0,0,0.75),xlab="Index",ylab = "Survived", ylim=c(-0.2,1.2),
      main="Net performance test\n before applying decision boundary")
 points(1:length(net.fitted.results),net.fitted.results,pch=16,col=rgb(0,0,1,0.75))
 legend("topright",col=c(rgb(1,0,0,0.75),rgb(0,0,1,0.75)),legend =c("Target","Output from net"),pch = c(16,16))
-net.fitted.results <- ifelse(net.fitted.results > 0.5,1,0)  #Same decision boundary
+net.fitted.results <- ifelse(net.fitted.results > 0.5,1,0)  #Same decision boundary at 0.5
 plot(y_test,pch=16,col=rgb(1,0,0,0.75),xlab="Index",ylab = "Survived", ylim=c(-0.2,1.2),
      main="Net performance test\n after applying decision boundary")
 points(1:length(net.fitted.results),net.fitted.results,pch=16,col=rgb(0,0,1,0.75))
 legend("topright",col=c(rgb(1,0,0,0.75),rgb(0,0,1,0.75)),legend =c("Target","Output from net"),pch = c(16,16))
 
 misClasificError3 <- mean(net.fitted.results != test$Survived)
-print(paste('Accuracy',1-misClasificError3))
+print(paste('Accuracy',1-misClasificError3))    #check accuracy 
 
 
-misClasificError1
+misClasificError1    #check error from Bayesian model
 
-misClasificError2
+misClasificError2    #check error from classic model
 
-misClasificError3
+misClasificError3    #check error from nerual network model
